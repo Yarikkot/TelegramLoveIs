@@ -14,6 +14,8 @@ namespace Telegram.Bot.Services
         private readonly ITelegramBotClient _botClient;
         private readonly IComplimentService complimentService;
 
+        private const string InvalidText = "Нельзя устанавливать пустые строки и строки которые начинаются с \'/\'";
+
         private string buttonText = "Комплиментик для красотки";
         private string usageText = "Тебе нужно нажать кнопочку которая есть на клавиатуре и будет счастье :)";
         private string noComplimentText = "Комплименты закончились, но скоро появятся новые!";
@@ -95,14 +97,15 @@ namespace Telegram.Bot.Services
         private async Task AddCompliment(Message message, CancellationToken cancellationToken)
         {
             var compliment = CleanFromCommand(message.Text!, addCommand);
-            if (string.IsNullOrEmpty(compliment))
+            if (ValidateText(compliment))
             {
-                await SendMessage($"Нельзя добавить пустоту!", message.Chat.Id, cancellationToken);
+                complimentService.AddCompliment(compliment);
+                await SendMessage($"\"{compliment}\" успешно добавлен, теперь их {complimentService.GetComplimentCount()} в запасе!", message.Chat.Id, cancellationToken);
             }
-
-            complimentService.AddCompliment(compliment);
-            await SendMessage($"\"{compliment}\" успешно добавлен, теперь их {complimentService.GetComplimentCount()} в запасе!", message.Chat.Id, cancellationToken);
-
+            else
+            {
+                await SendMessage(InvalidText, message.Chat.Id, cancellationToken);
+            }
         }
 
         private async Task ShowCompliments(Message message, CancellationToken cancellationToken)
@@ -113,7 +116,7 @@ namespace Telegram.Bot.Services
 
         private async Task MakeСompliment(Message message, CancellationToken cancellationToken)
         {
-            if(complimentService.GetComplimentCount() == 0)
+            if (complimentService.GetComplimentCount() == 0)
             {
                 await SendMessage(noComplimentText, message.Chat.Id, cancellationToken);
                 return;
@@ -126,7 +129,15 @@ namespace Telegram.Bot.Services
                 compliment = complimentService.GetCompliment();
                 if (adminId != null)
                 {
-                    await SendMessage($"Осталось комплиментов: {complimentService.GetComplimentCount()}!", adminId.Value, cancellationToken);
+                    var count = complimentService.GetComplimentCount();
+                    if (count == 0)
+                    {
+                        await SendMessage($"❗️❗️❗️Осталось {count} комплиментов!❗️❗️❗️\nУ вас час чтоб добавить их, иначе кто знает что будет...", adminId.Value, cancellationToken);
+                    }
+                    else
+                    {
+                        await SendMessage($"Осталось комплиментов: {count}!", adminId.Value, cancellationToken);
+                    }
                 }
             }
             else
@@ -138,18 +149,6 @@ namespace Telegram.Bot.Services
             await SendMessage(compliment, message.Chat.Id, cancellationToken);
 
             lastCompliment = DateTime.Now;
-        }
-        public async Task HandlePollingErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
-        {
-            var ErrorMessage = exception switch
-            {
-                ApiRequestException apiRequestException => $"Telegram API Error:\n[{apiRequestException.ErrorCode}]\n{apiRequestException.Message}",
-                _ => exception.ToString()
-            };
-
-            // Cooldown in case of network connection error
-            if (exception is RequestException)
-                await Task.Delay(TimeSpan.FromSeconds(2), cancellationToken);
         }
 
         private async Task Admin(Message message, CancellationToken cancellationToken)
@@ -189,7 +188,7 @@ namespace Telegram.Bot.Services
             }
             else
             {
-                await SendMessage($"Нельзя устанавливать пустые строки и строки которые начинаются с \'/\'", message.Chat.Id, cancellationToken);
+                await SendMessage(InvalidText, message.Chat.Id, cancellationToken);
             }
         }
 
@@ -214,7 +213,7 @@ namespace Telegram.Bot.Services
 
         private string GetMinutStringByNumber(int minuts)
         {
-            switch (minuts%10)
+            switch (minuts % 10)
             {
                 case 1:
                     return "минуту";
@@ -230,6 +229,19 @@ namespace Telegram.Bot.Services
         private Task UnknownUpdateHandlerAsync(Update update, CancellationToken cancellationToken)
         {
             return Task.CompletedTask;
+        }
+
+        public async Task HandlePollingErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
+        {
+            var ErrorMessage = exception switch
+            {
+                ApiRequestException apiRequestException => $"Telegram API Error:\n[{apiRequestException.ErrorCode}]\n{apiRequestException.Message}",
+                _ => exception.ToString()
+            };
+
+            // Cooldown in case of network connection error
+            if (exception is RequestException)
+                await Task.Delay(TimeSpan.FromSeconds(2), cancellationToken);
         }
 
     }
