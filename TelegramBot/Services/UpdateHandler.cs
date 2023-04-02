@@ -179,6 +179,7 @@ namespace Telegram.Bot.Services
                     $"{changeUsageTextCommand} новый текст - изменить текст сообщения (сейчас {usageText})\n" +
                     $"{addCommand} новый комплимент - добавить новый комплимент (сейчас осталось комплиментов: {complimentService.GetComplimentCount()} )\n" +
                     $"{showCommand} - посмотреть все оставшиеся комплименты\n" +
+                    $"{clearAdminCommand} - удаляем данные об админе. Можно заново назначить командой {adminCommand}\n" +
                     $"Так же при выполнении команды {adminCommand} - ваш ID запомнился для оповещения об оставшихся комплиментах.";
                 await SendMessage(text, message.Chat.Id, cancellationToken);
             }
