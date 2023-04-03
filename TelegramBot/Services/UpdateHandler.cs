@@ -33,11 +33,12 @@ namespace Telegram.Bot.Services
 
         private long? adminId;
 
-        private ReplyKeyboardMarkup replyKeyboardMarkup =>
+        private ReplyMarkupBase replyKeyboardMarkup =>
             new ReplyKeyboardMarkup(new KeyboardButton(buttonText))
             {
                 ResizeKeyboard = true
             };
+        private ReplyMarkupBase replyKeyboardRemove = new ReplyKeyboardRemove();
 
         public UpdateHandler(ITelegramBotClient botClient, IComplimentService complimentService)
         {
@@ -246,10 +247,11 @@ namespace Telegram.Bot.Services
 
         private async Task SendMessage(string message, long id, CancellationToken cancellationToken)
         {
+            IReplyMarkup replyKeyboarb = Auth(id) ? replyKeyboardRemove : replyKeyboardMarkup;
             await _botClient.SendTextMessageAsync(
                chatId: id,
                text: message,
-               replyMarkup: replyKeyboardMarkup,
+               replyMarkup: replyKeyboarb,
                cancellationToken: cancellationToken);
         }
 
