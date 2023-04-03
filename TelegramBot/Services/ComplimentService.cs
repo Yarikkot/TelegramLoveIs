@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using TelegramBot.Abstract;
 
 namespace TelegramBot.Services
@@ -8,7 +9,7 @@ namespace TelegramBot.Services
     public class ComplimentService : IComplimentService
     {
         private const string FilePath = "data.json";
-        private readonly Queue<string> _compliments = new Queue<string>();
+        private Queue<string> _compliments = new Queue<string>();
 
         public ComplimentService()
         {
@@ -37,6 +38,18 @@ namespace TelegramBot.Services
             return null;
         }
 
+        public bool RemoveLastAdded()
+        {
+            var newSize = _compliments.Count - 1;
+            if (newSize > 0)
+            {
+                _compliments = new Queue<string>(_compliments.Take(newSize));
+                SaveData();
+                return true;
+            }
+
+            return false;
+        }
         private void SaveData()
         {
             File.WriteAllText(FilePath, JsonConvert.SerializeObject(_compliments));

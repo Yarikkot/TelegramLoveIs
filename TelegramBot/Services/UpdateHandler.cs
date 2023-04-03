@@ -24,6 +24,7 @@ namespace Telegram.Bot.Services
         private string changeButtonTextCommand = "/changeButtonText";
         private string changeUsageTextCommand = "/changeUsageText";
         private string addCommand = "/add";
+        private string removeLastAddedCommand = "/removeLastAdded";
         private string showCommand = "/show";
         private string adminCommand = "/admin";
         private string clearAdminCommand = "/clearAdmin";
@@ -42,13 +43,12 @@ namespace Telegram.Bot.Services
 
         public UpdateHandler(ITelegramBotClient botClient, IComplimentService complimentService)
         {
-            if (System.IO.File.Exists(adminInfoPath))
+            if (System.IO.File.Exists(adminInfoPath) 
+                && long.TryParse(System.IO.File.ReadAllText(adminInfoPath), out var id))
             {
-                if (long.TryParse(System.IO.File.ReadAllText(adminInfoPath), out var id))
-                {
-                    adminId = id;
-                }
+                adminId = id;
             }
+
             this._botClient = botClient ?? throw new ArgumentNullException(nameof(botClient));
             this.complimentService = complimentService ?? throw new ArgumentNullException(nameof(complimentService));
         }
@@ -80,6 +80,10 @@ namespace Telegram.Bot.Services
             else if (message.Text == clearAdminCommand)
             {
                 await ClearAdmin(message, cancellationToken);
+            }
+            else if (message.Text == removeLastAddedCommand)
+            {
+                await RemoveLastAdded(message, cancellationToken);
             }
             else if (message.Text.StartsWith(addCommand))
             {
@@ -179,10 +183,23 @@ namespace Telegram.Bot.Services
                     $"{changeButtonTextCommand} новый текст - изменить текст кнопки (сейчас {buttonText})\n" +
                     $"{changeUsageTextCommand} новый текст - изменить текст сообщения (сейчас {usageText})\n" +
                     $"{addCommand} новый комплимент - добавить новый комплимент (сейчас осталось комплиментов: {complimentService.GetComplimentCount()} )\n" +
+                    $"{removeLastAddedCommand} - удаляет последний добавленный комплимент\n" +
                     $"{showCommand} - посмотреть все оставшиеся комплименты\n" +
                     $"{clearAdminCommand} - удаляем данные об админе. Можно заново назначить командой {adminCommand}\n" +
                     $"Так же при выполнении команды {adminCommand} - ваш ID запомнился для оповещения об оставшихся комплиментах.";
                 await SendMessage(text, message.Chat.Id, cancellationToken);
+            }
+        }
+
+        private async Task RemoveLastAdded(Message message, CancellationToken cancellationToken)
+        {
+            if (complimentService.RemoveLastAdded())
+            {
+                await SendMessage("Успешно удалён последний добавленный комплимент", message.Chat.Id, cancellationToken);
+            }
+            else
+            {
+                await SendMessage("Нечего удалять :С", message.Chat.Id, cancellationToken);
             }
         }
 

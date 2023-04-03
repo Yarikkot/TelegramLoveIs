@@ -4,7 +4,9 @@ namespace TelegramBot.Abstract
 {
     public interface IComplimentService
     {
-        string GetCompliment();
+        bool RemoveLastAdded();
+
+        string? GetCompliment();
 
         int GetComplimentCount();
 
