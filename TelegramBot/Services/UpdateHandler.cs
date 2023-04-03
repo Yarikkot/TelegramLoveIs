@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot.Exceptions;
@@ -6,6 +7,7 @@ using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 using TelegramBot.Abstract;
+using TelegramBot.Services;
 
 namespace Telegram.Bot.Services
 {
@@ -15,7 +17,7 @@ namespace Telegram.Bot.Services
         private readonly IComplimentService complimentService;
 
         private const string InvalidText = "Нельзя устанавливать пустые строки и строки которые начинаются с \'/\'";
-        private const string adminInfoPath = "admin.yar";
+        private string adminInfoPath = Path.Combine(ComplimentService.RootPath, "admin.yar");
 
         private string buttonText = "Комплиментик для красотки";
         private string usageText = "Тебе нужно нажать кнопочку которая есть на клавиатуре и будет счастье :)";
@@ -43,7 +45,7 @@ namespace Telegram.Bot.Services
 
         public UpdateHandler(ITelegramBotClient botClient, IComplimentService complimentService)
         {
-            if (System.IO.File.Exists(adminInfoPath) 
+            if (System.IO.File.Exists(adminInfoPath)
                 && long.TryParse(System.IO.File.ReadAllText(adminInfoPath), out var id))
             {
                 adminId = id;

@@ -8,7 +8,9 @@ namespace TelegramBot.Services
 {
     public class ComplimentService : IComplimentService
     {
+        public const string RootPath = "data";
         private const string FilePath = "data.json";
+        private string fullPath = Path.Combine(RootPath, FilePath);
         private Queue<string> _compliments = new Queue<string>();
 
         public ComplimentService()
@@ -52,12 +54,12 @@ namespace TelegramBot.Services
         }
         private void SaveData()
         {
-            File.WriteAllText(FilePath, JsonConvert.SerializeObject(_compliments));
+            File.WriteAllText(fullPath, JsonConvert.SerializeObject(_compliments));
         }
 
         private void LoadData()
         {
-            if (File.Exists(FilePath))
+            if (File.Exists(fullPath))
             {
                 var array = JsonConvert.DeserializeObject<List<string>>(File.ReadAllText(FilePath));
                 foreach (var item in array)
