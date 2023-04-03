@@ -15,7 +15,7 @@ namespace Telegram.Bot.Services
         private readonly IComplimentService complimentService;
 
         private const string InvalidText = "Нельзя устанавливать пустые строки и строки которые начинаются с \'/\'";
-        private const string adminInfoPath = "admin";
+        private const string adminInfoPath = "admin.yar";
 
         private string buttonText = "Комплиментик для красотки";
         private string usageText = "Тебе нужно нажать кнопочку которая есть на клавиатуре и будет счастье :)";
