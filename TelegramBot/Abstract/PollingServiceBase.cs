@@ -37,8 +37,9 @@ namespace Telegram.Bot.Abstract
 
                     await receiver.ReceiveAsync(stoppingToken);
                 }
-                catch
+                catch(Exception ex)
                 {
+                    Console.WriteLine(ex);
                     await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
                 }
             }

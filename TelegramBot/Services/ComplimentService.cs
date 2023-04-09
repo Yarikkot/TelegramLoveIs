@@ -61,7 +61,7 @@ namespace TelegramBot.Services
         {
             if (File.Exists(fullPath))
             {
-                var array = JsonConvert.DeserializeObject<List<string>>(File.ReadAllText(FilePath));
+                var array = JsonConvert.DeserializeObject<List<string>>(File.ReadAllText(fullPath));
                 foreach (var item in array)
                 {
                     _compliments.Enqueue(item);
